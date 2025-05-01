@@ -1,0 +1,343 @@
+/* OrderDetail.css */
+.order-detail-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  color: var(--dark);
+}
+
+/* Loading and Error States */
+.loading-container, .error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+}
+
+.error-container {
+  background-color: rgba(var(--danger), 0.05);
+  border-radius: var(--radius-md);
+}
+
+.btn-retry {
+  margin-top: 1rem;
+  padding: 0.5rem 1.5rem;
+  background: var(--gradient-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+/* Order Header */
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.order-header-left h1 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.75rem;
+  color: var(--dark);
+  font-weight: 700;
+}
+
+.order-dates {
+  color: var(--gray);
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.order-status {
+  margin-bottom: 1rem;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: white;
+}
+
+.status-pending {
+  background: var(--gradient-warning);
+  box-shadow: 0 4px 10px rgba(var(--warning), 0.2);
+}
+
+.status-processing {
+  background: var(--gradient-info);
+  box-shadow: 0 4px 10px rgba(var(--info), 0.2);
+}
+
+.status-shipped {
+  background: var(--gradient-primary);
+  box-shadow: 0 4px 10px rgba(var(--primary), 0.2);
+}
+
+.status-delivered {
+  background: var(--gradient-success);
+  box-shadow: 0 4px 10px rgba(var(--success), 0.2);
+}
+
+.status-cancelled {
+  background: var(--gradient-danger);
+  box-shadow: 0 4px 10px rgba(var(--danger), 0.2);
+}
+
+.order-header-right {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn-back, .btn-print {
+  display: flex;
+  align-items: center;
+  padding: 0.6rem 1.25rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn-back {
+  background-color: transparent;
+  border: 1px solid var(--gray-light);
+  color: var(--gray-dark);
+}
+
+.btn-print {
+  background: var(--gradient-primary);
+  color: white;
+  border: none;
+}
+
+/* Order Content Layout */
+.order-content {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+}
+
+@media (max-width: 992px) {
+  .order-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Customer Information */
+.order-details-section {
+  background-color: white;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 2rem;
+}
+
+.customer-info h2,
+.order-details h2,
+.order-items h2,
+.shipping-address h2,
+.billing-address h2 {
+  padding: 1.25rem;
+  margin: 0;
+  background-color: #f9fafc;
+  border-bottom: 1px solid var(--gray-light);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--dark);
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+  padding: 1.25rem;
+}
+
+.info-item {
+  margin-bottom: 0.5rem;
+}
+
+.info-label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--gray);
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+}
+
+.info-value {
+  font-weight: 500;
+  color: var(--dark);
+  word-break: break-word;
+}
+
+/* Address Section */
+.address-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+@media (max-width: 768px) {
+  .address-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+.shipping-address, 
+.billing-address {
+  background-color: white;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+/* Order Items */
+.items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 0;
+}
+
+.items-table th {
+  background-color: #f9fafc;
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--gray);
+}
+
+.items-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--gray-light);
+}
+
+.items-table tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.01);
+}
+
+.text-right {
+  text-align: right;
+}
+
+.total-row {
+  font-weight: bold;
+  background-color: #f9fafc;
+}
+
+.total-row td {
+  padding: 1rem;
+  border-top: 2px solid var(--gray-light);
+  font-weight: 700;
+}
+
+/* Order Management */
+.order-management {
+  background-color: white;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+}
+
+/* Status Update */
+.status-update {
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.status-update select {
+  padding: 0.75rem;
+  border: 1px solid var(--gray-light);
+  border-radius: var(--radius);
+  background-color: white;
+  margin: 0.5rem 0 1rem;
+  font-size: 1rem;
+}
+
+/* Tracking Info */
+.tracking-info .input-group,
+.admin-notes .input-group {
+  margin-bottom: 1.5rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.input-group label {
+  margin-bottom: 0.5rem;
+  color: var(--gray-dark);
+}
+
+.input-group input,
+.input-group textarea {
+  padding: 0.75rem;
+  border: 1px solid var(--gray-light);
+  border-radius: var(--radius);
+  font-size: 1rem;
+}
+
+.admin-notes textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.btn-update {
+  padding: 0.75rem 1.5rem;
+  background: var(--gradient-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-update:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-update:disabled {
+  background: var(--gray-light);
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Print-specific styles */
+@media print {
+  .back-button, .print-button, .management-section, .order-actions {
+    display: none !important;
+  }
+  
+  .order-detail-page {
+    padding: 0 !important;
+  }
+  
+  .order-header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .items-table {
+    page-break-inside: avoid;
+  }
+} 

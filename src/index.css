@@ -1,0 +1,981 @@
+/* Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+  color: #333;
+  background-color: #f5f7fa;
+}
+
+button {
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  background-color: #3498db;
+  color: white;
+  font-weight: 600;
+  margin: 5px;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #2980b9;
+}
+
+button:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+}
+
+a {
+  color: #3498db;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Login Page */
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding: 20px;
+  text-align: center;
+}
+
+.login-container h1 {
+  margin-bottom: 15px;
+  color: #2c3e50;
+}
+
+.login-container p {
+  margin-bottom: 30px;
+  color: #7f8c8d;
+}
+
+.login-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+/* Dashboard */
+.dashboard-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-header {
+  background-color: #2c3e50;
+  color: white;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.logout-btn {
+  background-color: #e74c3c;
+}
+
+.logout-btn:hover {
+  background-color: #c0392b;
+}
+
+.dashboard-content {
+  display: flex;
+  flex: 1;
+}
+
+.sidebar {
+  width: 200px;
+  background-color: #34495e;
+  color: white;
+  padding: 20px 0;
+}
+
+.sidebar ul {
+  list-style: none;
+}
+
+.sidebar li {
+  padding: 10px 20px;
+}
+
+.sidebar a {
+  color: white;
+  display: block;
+  transition: color 0.3s;
+}
+
+.sidebar a:hover {
+  color: #3498db;
+  text-decoration: none;
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.section {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.section h2 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #ecf0f1;
+  padding-bottom: 10px;
+}
+
+/* Stats and Dashboard specific styles */
+.stats-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.stat-card {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 15px;
+  text-align: center;
+  transition: transform 0.3s, box-shadow 0.3s;
+  border-left: 4px solid #3498db;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card h3 {
+  font-size: 16px;
+  margin-bottom: 10px;
+  color: #7f8c8d;
+}
+
+.stat-number {
+  font-size: 28px;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+/* Leads page styles */
+.leads-list {
+  margin-top: 20px;
+}
+
+.empty-state {
+  text-align: center;
+  color: #7f8c8d;
+  padding: 30px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+/* Form styles */
+.form-container {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 20px;
+  border-left: 4px solid #3498db;
+}
+
+.form-container h3 {
+  margin-bottom: 15px;
+  color: #2c3e50;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.form-group textarea {
+  height: 100px;
+  resize: vertical;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.error {
+  color: #e74c3c;
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: #fadbd8;
+  border-radius: 4px;
+}
+
+.small-error {
+  color: #e74c3c;
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+.error-container {
+  background-color: #fadbd8;
+  border-radius: 8px;
+  padding: 15px;
+  margin-top: 20px;
+  text-align: center;
+}
+
+.error-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+/* Loading styles */
+.loading-indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.loading-indicator:after {
+  content: "...";
+  animation: dots 1.5s steps(5, end) infinite;
+}
+
+@keyframes dots {
+  0%, 20% { content: "."; }
+  40% { content: ".."; }
+  60%, 100% { content: "..."; }
+}
+
+/* Table styles */
+.leads-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.leads-header {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr 1fr 1fr;
+  background-color: #f9f9f9;
+  font-weight: bold;
+  padding: 10px;
+  border-bottom: 2px solid #ecf0f1;
+}
+
+.lead-row {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr 1fr 1fr;
+  border-bottom: 1px solid #ecf0f1;
+  transition: background-color 0.2s;
+}
+
+.lead-row:hover {
+  background-color: #f5f9fa;
+}
+
+.lead-cell {
+  padding: 12px 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-new {
+  background-color: #d6eaf8;
+  color: #2980b9;
+}
+
+.status-contacted {
+  background-color: #d4efdf;
+  color: #27ae60;
+}
+
+.status-qualified {
+  background-color: #fdebd0;
+  color: #f39c12;
+}
+
+.status-converted {
+  background-color: #ebdef0;
+  color: #8e44ad;
+}
+
+.small-btn {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+/* Deals page styles */
+.deals-board {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.deal-column {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 15px;
+}
+
+.deal-column h3 {
+  font-size: 16px;
+  margin-bottom: 15px;
+  color: #2c3e50;
+  text-align: center;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+.deal-cards {
+  min-height: 200px;
+}
+
+/* Team page styles */
+.team-list {
+  margin-top: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #ecf0f1;
+}
+
+.team-header, .team-row {
+  display: grid;
+  grid-template-columns: 2fr 3fr 1fr 1fr 1fr;
+  gap: 10px;
+}
+
+.team-header {
+  background-color: #f9f9f9;
+  font-weight: bold;
+  padding: 10px;
+}
+
+.team-row {
+  padding: 10px;
+  border-top: 1px solid #ecf0f1;
+}
+
+/* Add a more distinct background for default team members */
+.team-row.default-member {
+  background-color: #f0f8ff;
+  border-left: 3px solid #3498db;
+}
+
+.team-cell {
+  display: flex;
+  align-items: center;
+}
+
+.email-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.activation-note {
+  color: #6c757d;
+  font-style: italic;
+  font-size: 0.9em;
+  font-weight: bold;
+  background-color: #fff3cd;
+  padding: 2px 5px;
+  border-radius: 3px;
+}
+
+/* Loading indicator */
+.loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 20px;
+  color: #3498db;
+}
+
+/* Organization badge styles */
+.org-badge {
+  display: inline-block;
+  background-color: #34495e;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  margin-right: 15px;
+  border: 1px solid #2c3e50;
+}
+
+.org-name {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: help;
+}
+
+/* Organization info section */
+.organization-info {
+  background-color: #f8f9fa;
+  border-left: 4px solid #3498db;
+  margin: 20px 0;
+  padding: 15px;
+  border-radius: 4px;
+}
+
+.organization-info h3 {
+  margin-top: 0;
+  color: #2c3e50;
+}
+
+.organization-info p {
+  margin: 5px 0;
+}
+
+.info-note {
+  color: #7f8c8d;
+  font-size: 0.9em;
+  margin-top: 10px !important;
+}
+
+/* Tenant indicators for leads page */
+.tenant-indicator {
+  display: inline-block;
+  background-color: #eee;
+  padding: 6px 12px;
+  border-radius: 4px;
+  margin: 10px 0 20px;
+  font-size: 0.9em;
+}
+
+.tenant-indicator .separator {
+  margin: 0 10px;
+  color: #999;
+}
+
+.multi-tenant-notice {
+  background-color: #f0f8ff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  font-size: 0.85em;
+  color: #3498db;
+}
+
+.info-icon {
+  margin-right: 5px;
+}
+
+.empty-state-sub {
+  font-size: 0.9em;
+  color: #7f8c8d;
+  margin-top: 8px;
+}
+
+/* Role badge styles */
+.role-badge {
+  display: inline-block;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  margin: 0 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: relative;
+  top: -1px;
+}
+
+/* Role Permissions Info styles */
+.role-permissions-info {
+  background-color: #f8f9fa;
+  padding: 15px;
+  margin: 15px 0;
+  border-radius: 8px;
+  border-left: 4px solid #3498db;
+}
+
+.role-permissions-info h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #2c3e50;
+}
+
+.role-permissions-info ul {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.role-permissions-info li {
+  margin-bottom: 5px;
+}
+
+.role-permissions-info p.note {
+  margin-top: 10px;
+  font-style: italic;
+  color: #7f8c8d;
+}
+
+/* Modal styles */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+  gap: 10px;
+}
+
+/* Role info section styles */
+.role-info-section {
+  background-color: #f8f9fa;
+  padding: 15px;
+  margin: 15px 0;
+  border-radius: 8px;
+  border-left: 4px solid #9b59b6;
+}
+
+.role-info-section h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #2c3e50;
+}
+
+.role-info-section ul {
+  margin: 10px 0;
+  padding-left: 20px;
+}
+
+.role-info-section li {
+  margin-bottom: 8px;
+}
+
+.role-info-section code {
+  background-color: #f0f0f0;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+.info-tip {
+  margin-top: 10px;
+  font-style: italic;
+  color: #7f8c8d;
+  border-top: 1px solid #eee;
+  padding-top: 8px;
+}
+
+/* Email badge styles */
+.email-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+/* Deal card styles */
+.deal-card {
+  background-color: white;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.deal-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.deal-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #2c3e50;
+}
+
+.deal-amount {
+  font-size: 18px;
+  font-weight: bold;
+  color: #27ae60;
+  margin-bottom: 8px;
+}
+
+.deal-lead, .deal-date, .deal-probability, .deal-description {
+  font-size: 13px;
+  color: #7f8c8d;
+  margin-bottom: 4px;
+}
+
+.deal-description {
+  margin-top: 8px;
+  font-style: italic;
+  border-top: 1px solid #eee;
+  padding-top: 6px;
+}
+
+.small-info {
+  font-size: 13px;
+  color: #7f8c8d;
+  margin-top: 5px;
+  font-style: italic;
+}
+
+/* Success message styles */
+.success-message {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 12px 20px;
+  border-radius: 4px;
+  margin: 15px 0;
+  display: flex;
+  align-items: center;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.success-icon {
+  font-size: 18px;
+  margin-right: 10px;
+  color: #28a745;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Disabled button styles */
+button:disabled {
+  background-color: #68b984;
+  cursor: default;
+}
+
+button:disabled:hover {
+  background-color: #68b984;
+}
+
+/* Status badges for team members */
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.status-active {
+  background-color: #27ae60;
+  color: white;
+}
+
+.status-pending {
+  background-color: #f39c12;
+  color: white;
+}
+
+/* Loading indicator improvements */
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: #666;
+}
+
+.loading-indicator::after {
+  content: "...";
+  animation: dots 1.5s steps(4, end) infinite;
+}
+
+/* Disabled button states */
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+button:disabled:hover {
+  background-color: #ccc;
+  transform: none;
+}
+
+/* Success message improvements */
+.success-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #27ae60;
+  color: white;
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin: 16px 0;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.success-icon {
+  font-size: 1.2em;
+}
+
+/* Modal improvements */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  min-width: 400px;
+  max-width: 90%;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+/* Small error message */
+.small-error {
+  color: #e74c3c;
+  font-size: 0.9em;
+  margin-top: 4px;
+}
+
+/* Role badge improvements */
+.role-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-weight: 500;
+  color: white;
+  text-transform: uppercase;
+}
+
+.activation-note {
+  color: #6c757d;
+  font-style: italic;
+  font-size: 0.9em;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85em;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.status-active {
+  background-color: #28a745;
+  color: white;
+}
+
+.status-pending {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.team-count-info {
+  background-color: #f8f9fa;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  font-size: 0.9em;
+  color: #6c757d;
+  text-align: right;
+}
+
+/* Join Page */
+.join-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f5f7fa;
+  padding: 20px;
+}
+
+.join-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  width: 100%;
+  max-width: 500px;
+  text-align: center;
+}
+
+.join-container h1 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+}
+
+.invitation-details {
+  margin: 20px 0;
+}
+
+.invitation-details h2 {
+  color: #3498db;
+  margin-bottom: 15px;
+}
+
+.join-button {
+  background-color: #3498db;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 20px;
+}
+
+.join-button:hover {
+  background-color: #2980b9;
+}
+
+/* Join Success Message */
+.join-success-message {
+  background-color: #e8f5e9;
+  border-left: 4px solid #4caf50;
+  padding: 15px 20px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.join-success-message h2 {
+  color: #2e7d32;
+  margin-bottom: 10px;
+}
+
+.join-success-message p {
+  color: #333;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+} 
