@@ -15,16 +15,38 @@ const auth = async (req, res, next) => {
     try {
       // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      console.log('Token verification successful:', { sub: decoded.sub, email: decoded.email });
+      console.log('Token verification successful:', { sub: decoded.sub, email: decoded.email, orgId: decoded.organizationId });
+      
+      // Get the organizationId from the token if available
+      const tokenOrgId = decoded.organizationId;
       
       // Check if user exists with the Kinde ID from token
-      const user = await User.findOne({ kindeId: decoded.sub });
+      // If token has organizationId, include that in the query for more specific matching
+      const queryConditions = { kindeId: decoded.sub };
+      if (tokenOrgId) {
+        queryConditions.organizationId = tokenOrgId;
+      }
+      
+      const user = await User.findOne(queryConditions);
       
       if (!user) {
-        console.log(`User not found for kindeId: ${decoded.sub}`);
+        console.log(`User not found for kindeId: ${decoded.sub}${tokenOrgId ? ` in organization: ${tokenOrgId}` : ''}`);
+        
+        // If we were looking for a specific organization but didn't find the user there,
+        // check if the user exists in any organization
+        let userInAnyOrg = null;
+        if (tokenOrgId) {
+          userInAnyOrg = await User.findOne({ kindeId: decoded.sub });
+          if (userInAnyOrg) {
+            console.log(`User exists but in a different organization: ${userInAnyOrg.organizationId}`);
+          }
+        }
         
         // Try to find by email as a fallback
-        const userByEmail = await User.findOne({ email: decoded.email });
+        const userByEmail = await User.findOne({ 
+          email: decoded.email,
+          ...(tokenOrgId ? { organizationId: tokenOrgId } : {})  
+        });
         if (userByEmail) {
           console.log(`User found by email (${decoded.email}) but kindeId doesn't match:`);
           console.log(`- Database kindeId: ${userByEmail.kindeId}`);

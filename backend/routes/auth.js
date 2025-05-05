@@ -8,87 +8,9 @@ const { auth } = require('../middleware/auth');
 
 // Helper function to create default team members
 async function createDefaultTeamMembers(organizationId) {
-  console.log(`Starting creation of default team members for org: ${organizationId}`);
-  
-  // Create more meaningful default team members
-  const defaultTeamMembers = [
-    {
-      email: 'salesrep1@b2boost.com',
-      firstName: 'Default',
-      lastName: 'Sales Rep 1',
-      role: 'customer',
-      isActive: false
-    },
-    {
-      email: 'salesrep2@b2boost.com',
-      firstName: 'Default',
-      lastName: 'Sales Rep 2',
-      role: 'customer',
-      isActive: false
-    },
-    {
-      email: 'manager1@b2boost.com',
-      firstName: 'Default',
-      lastName: 'Manager 1',
-      role: 'manager', // Set as manager directly
-      isActive: false
-    },
-    {
-      email: 'manager2@b2boost.com',
-      firstName: 'Default',
-      lastName: 'Manager 2',
-      role: 'manager', // Set as manager directly
-      isActive: false
-    },
-    {
-      email: 'support@b2boost.com',
-      firstName: 'Default',
-      lastName: 'Support Team',
-      role: 'customer',
-      isActive: false
-    }
-  ];
-
-  try {
-    let createdCount = 0;
-    console.log(`Attempting to create ${defaultTeamMembers.length} default team members...`);
-    
-    // Create default team members
-    for (const member of defaultTeamMembers) {
-      try {
-        // Check if this team member already exists in this organization
-        const existingUser = await User.findOne({ 
-          email: member.email,
-          organizationId 
-        });
-
-        if (!existingUser) {
-          const newUser = new User({
-            kindeId: `default-${Date.now()}-${Math.random().toString(36).substring(7)}`,
-            email: member.email,
-            firstName: member.firstName,
-            lastName: member.lastName,
-            role: member.role,
-            organizationId,
-            isActive: member.isActive // Always false for default members
-          });
-          
-          const saved = await newUser.save();
-          console.log(`✓ Created default team member: ${saved.firstName} ${saved.lastName} (${saved.email}) with role ${saved.role}`);
-          createdCount++;
-        } else {
-          console.log(`→ Default team member already exists: ${member.email} (skipping)`);
-        }
-      } catch (memberError) {
-        console.error(`Error creating default member ${member.email}:`, memberError);
-      }
-    }
-    
-    console.log(`Successfully created ${createdCount} default team members out of ${defaultTeamMembers.length}`);
-  } catch (error) {
-    console.error('Error in createDefaultTeamMembers:', error);
-    // Don't throw the error - we want the registration to continue even if this fails
-  }
+  console.log(`Creation of default team members is now disabled to prevent duplicate email issues.`);
+  // Disabled to prevent duplicate email issues
+  return;
 }
 
 // POST /api/auth/register
@@ -117,130 +39,356 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    // Check if organization exists and update or create
-    try {
-      // First check if the organization already exists
-      const existingOrg = await Organization.findOne({ kindeOrgId: organizationId });
-      const isNewOrganization = !existingOrg;
+    // Normalize email to prevent case sensitivity issues
+    const normalizedEmail = email.toLowerCase().trim();
+    
+    // IMPORTANT - Check if we already have a user with this email in ANY organization first
+    const existingUserWithSameEmail = await User.findOne({ 
+      email: normalizedEmail,
+      status: 'active'
+    });
+    
+    if (existingUserWithSameEmail) {
+      console.log('Found existing user with same email in a different organization');
       
-      // Create or update the organization
-      let organization = await Organization.findOneAndUpdate(
-        { kindeOrgId: organizationId },
-        { 
-          kindeOrgId: organizationId,
-          name: organizationName || 'New Organization',
-          $setOnInsert: { createdAt: Date.now() },
-          updatedAt: Date.now()
-        },
-        { 
-          new: true, 
-          upsert: true,
-          setDefaultsOnInsert: true
-        }
-      );
-
-      // If this is a new organization, create default team members
-      if (isNewOrganization) {
-        console.log(`New organization created: ${organizationId}. Creating default team members...`);
-        await createDefaultTeamMembers(organizationId);
+      // If the kindeIds are different, update all instances to use the new kindeId
+      // This ensures consistent authentication across organizations
+      if (existingUserWithSameEmail.kindeId !== kindeId) {
+        console.log('Updating all user records to use the same kindeId for consistent auth');
+        await User.updateMany(
+          { email: normalizedEmail },
+          { $set: { kindeId: kindeId }}
+        );
       }
-    } catch (orgError) {
-      console.error('Error creating/updating organization:', orgError);
-      return res.status(500).json({ 
-        message: 'Error creating or updating organization', 
-        error: orgError.message 
-      });
     }
 
-    // Check if user exists
-    let user = await User.findOne({ kindeId });
+    // Check if organization exists and update or create
+    let organization = await Organization.findOne({ kindeOrgId: organizationId });
     
-    if (user) {
-      console.log(`Existing user found with kindeId ${kindeId}:`, {
-        email: user.email,
-        role: user.role,
-        organizationId: user.organizationId
+    if (!organization) {
+      console.log('Organization not found, creating new organization');
+      
+      organization = new Organization({
+          kindeOrgId: organizationId,
+        name: organizationName || `${firstName || lastName || 'User'}'s Organization`,
+        createdAt: Date.now(),
+          updatedAt: Date.now()
       });
       
-      // Update user's information
-      user.lastLogin = Date.now();
-      user.email = email; // Update email in case it changed
-      user.firstName = firstName || user.firstName;
-      user.lastName = lastName || user.lastName;
-      user.isActive = true; // Ensure real users are marked as active
-      user.updatedAt = Date.now();
-      
       try {
-        await user.save();
-        console.log(`Existing user updated: ${user.email}`);
-      } catch (updateError) {
-        console.error('Error updating existing user:', updateError);
+      await organization.save();
+        console.log('New organization created successfully');
+      } catch (saveError) {
+        console.error('Error creating organization:', saveError);
         return res.status(500).json({ 
-          message: 'Error updating user data', 
-          error: updateError.message 
+          message: 'Error creating organization', 
+          error: saveError.message 
         });
       }
     } else {
-      // Check for invited user
-      const invitedUser = await User.findOne({ 
-        email: email.toLowerCase(),
-        organizationId,
-        status: 'pending'
-      });
-
-      if (invitedUser) {
-        // Update the invited user with Kinde info
-        invitedUser.kindeId = kindeId;
-        invitedUser.firstName = firstName || '';
-        invitedUser.lastName = lastName || '';
-        invitedUser.isActive = true;
-        invitedUser.status = 'active';
-        invitedUser.lastLogin = Date.now();
-        invitedUser.updatedAt = Date.now();
+      console.log('Organization found:', organization.name);
+    }
+    
+    // Check if user already exists with this kindeId (in any organization)
+    let user = await User.findOne({ kindeId });
+    
+    if (user) {
+      console.log('User found with kindeId:', user.email);
+      
+      // Check if user already exists in this specific organization
+      const userInOrg = await User.findOne({ kindeId, organizationId });
+      
+      if (userInOrg) {
+        console.log('User already exists in this organization, updating');
         
-        await invitedUser.save();
-        user = invitedUser;
-      } else {
-        // Create new user with default role
+        // User exists in this organization, update login time and return token
+        userInOrg.lastLogin = Date.now();
+        userInOrg.updatedAt = Date.now();
+        userInOrg.isActive = true;
+        userInOrg.status = 'active';
+        
+        if (firstName) userInOrg.firstName = firstName;
+        if (lastName) userInOrg.lastName = lastName;
+        
         try {
-          user = new User({
-            kindeId,
-            email: email.toLowerCase(),
+          await userInOrg.save();
+          console.log('User updated successfully');
+        } catch (saveError) {
+          console.error('Error updating user:', saveError);
+          return res.status(500).json({ 
+            message: 'Error updating user', 
+            error: saveError.message 
+          });
+        }
+        
+        user = userInOrg;
+      } else {
+        // User exists but in different organization
+        console.log('User exists in different organization, checking for invitations in this org');
+        
+        // Check if user was invited to this organization
+        const invitation = await User.findOne({ 
+          email: normalizedEmail,
+          organizationId,
+          status: 'pending'
+        });
+        
+        if (invitation) {
+          // User was invited, convert invitation to active user
+          console.log('Found pending invitation, converting to active user');
+          
+          invitation.kindeId = kindeId;
+          invitation.firstName = firstName || '';
+          invitation.lastName = lastName || '';
+          invitation.isActive = true;
+          invitation.status = 'active';
+          invitation.lastLogin = Date.now();
+          invitation.updatedAt = Date.now();
+          
+          try {
+            await invitation.save();
+            console.log('Invitation converted to active user successfully');
+            user = invitation;
+          } catch (saveError) {
+            console.error('Error converting invitation:', saveError);
+            return res.status(500).json({ 
+              message: 'Error converting invitation', 
+              error: saveError.message 
+            });
+          }
+        } else {
+          // No invitation, create a new user record for this organization
+          console.log('No invitation found, creating new user record for this organization');
+          
+          const newOrgUser = new User({
             firstName: firstName || '',
             lastName: lastName || '',
-            role: 'customer', // Default role for direct signups
+            email: normalizedEmail, // Use normalized email
+            kindeId,
+            role: 'customer', // Default role for additional organizations
             organizationId,
             isActive: true,
             status: 'active',
             createdAt: Date.now(),
-            updatedAt: Date.now(),
-            lastLogin: Date.now()
+            updatedAt: Date.now()
           });
           
-          await user.save();
-          console.log(`New user created: ${user.email}`, {
-            role: user.role,
-            kindeId: user.kindeId,
-            organizationId: user.organizationId
+          try {
+            await newOrgUser.save();
+            console.log('New user record created for additional organization');
+            user = newOrgUser;
+          } catch (saveError) {
+            console.error('Error creating user for additional organization:', saveError);
+            
+            if (saveError.code === 11000) {
+              const errorDetails = saveError.keyPattern ? 
+                Object.keys(saveError.keyPattern).join(', ') : 
+                'unknown field';
+                
+              // Check if it's a race condition and get the user that was just created
+              const existingUser = await User.findOne({ 
+                email: normalizedEmail,
+                organizationId
+              });
+              
+              if (existingUser) {
+                console.log('Found existing user in race condition, using that instead');
+                user = existingUser;
+              } else {
+              return res.status(400).json({ 
+                  message: `Registration failed due to duplicate ${errorDetails}`,
+                error: saveError.message 
+              });
+            }
+            } else {
+            return res.status(500).json({ 
+                message: 'Error creating user for additional organization', 
+              error: saveError.message 
+            });
+            }
+          }
+        }
+      }
+    } else {
+      console.log('No user found with this kindeId, checking for existing email');
+      
+      // Check if user exists with this email (in any organization)
+      const existingUserWithEmail = await User.findOne({ 
+        email: normalizedEmail
+      });
+      
+      if (existingUserWithEmail) {
+        console.log('Found user with same email but different kindeId');
+        
+        // Check if user was invited to this organization
+        const invitation = await User.findOne({ 
+        email: normalizedEmail,
+          organizationId,
+          status: 'pending'
+        });
+        
+        if (invitation) {
+          // User was invited, convert invitation to active user
+          console.log('Found pending invitation, converting to active user');
+          
+          invitation.kindeId = kindeId;
+          invitation.firstName = firstName || '';
+          invitation.lastName = lastName || '';
+          invitation.isActive = true;
+          invitation.status = 'active';
+          invitation.lastLogin = Date.now();
+          invitation.updatedAt = Date.now();
+          
+          try {
+            await invitation.save();
+            console.log('Invitation converted to active user successfully');
+            user = invitation;
+          } catch (saveError) {
+            console.error('Error converting invitation:', saveError);
+            
+            if (saveError.code === 11000) {
+              // Check for race condition
+              const existingUser = await User.findOne({ 
+                email: normalizedEmail,
+                organizationId
+              });
+              
+              if (existingUser) {
+                console.log('Found existing user in race condition, using that instead');
+                user = existingUser;
+              } else {
+              return res.status(400).json({ 
+                  message: `Registration failed due to duplicate email`,
+                error: saveError.message 
+              });
+            }
+            } else {
+            return res.status(500).json({ 
+              message: 'Error converting invitation', 
+              error: saveError.message 
+            });
+            }
+          }
+        } else {
+          console.log('Creating new user');
+        
+        // Count active users in the organization to determine if this should be the owner
+        const userCount = await User.countDocuments({ 
+          organizationId,
+          status: 'active'
+        });
+        
+        const shouldBeOwner = userCount === 0;
+        const role = shouldBeOwner ? 'owner' : 'customer';
+        
+        console.log(`User will be assigned role: ${role} (first user in org: ${shouldBeOwner})`);
+        
+        user = new User({
+          firstName: firstName || '',
+          lastName: lastName || '',
+            email: normalizedEmail, // Use normalized email
+            kindeId,
+            role,
+            organizationId,
+            isActive: true,
+            status: 'active',
+            createdAt: Date.now(),
+            updatedAt: Date.now()
           });
+        
+          try {
+            await user.save();
+            console.log('New user created successfully');
+          } catch (saveError) {
+            console.error('Error saving new user:', saveError);
+            
+            if (saveError.code === 11000) {
+              // Check for race condition
+              const existingUser = await User.findOne({ 
+          email: normalizedEmail,
+                organizationId
+              });
+              
+              if (existingUser) {
+                console.log('Found existing user in race condition, using that instead');
+                user = existingUser;
+              } else {
+                const errorDetails = saveError.keyPattern ? 
+                  Object.keys(saveError.keyPattern).join(', ') : 
+                  'unknown field';
+                
+                return res.status(400).json({ 
+                  message: `Registration failed due to duplicate ${errorDetails}`,
+                  error: saveError.message 
+                });
+              }
+            } else {
+              return res.status(500).json({ 
+                message: 'Error creating new user', 
+                error: saveError.message 
+              });
+            }
+          }
+        }
+      } else {
+        console.log('Creating new user');
+        
+        // Count active users in the organization to determine if this should be the owner
+        const userCount = await User.countDocuments({ 
+          organizationId,
+          status: 'active'
+        });
+        
+        const shouldBeOwner = userCount === 0;
+        const role = shouldBeOwner ? 'owner' : 'customer';
+        
+        console.log(`User will be assigned role: ${role} (first user in org: ${shouldBeOwner})`);
+          
+        user = new User({
+          firstName: firstName || '',
+          lastName: lastName || '',
+          email: normalizedEmail, // Use normalized email
+          kindeId,
+          role,
+          organizationId,
+          isActive: true,
+          status: 'active',
+          createdAt: Date.now(),
+          updatedAt: Date.now()
+        });
+      
+      try {
+        await user.save();
+            console.log('New user created successfully');
         } catch (saveError) {
           console.error('Error saving new user:', saveError);
           
           if (saveError.code === 11000) {
+            // Check for race condition
+            const existingUser = await User.findOne({ 
+              email: normalizedEmail,
+              organizationId
+            });
+            
+            if (existingUser) {
+              console.log('Found existing user in race condition, using that instead');
+              user = existingUser;
+      } else {
             const errorDetails = saveError.keyPattern ? 
               Object.keys(saveError.keyPattern).join(', ') : 
               'unknown field';
               
             return res.status(400).json({ 
-              message: `Registration failed due to duplicate ${errorDetails}`,
+                message: `Registration failed due to duplicate ${errorDetails}`,
               error: saveError.message 
             });
           }
-          
+          } else {
           return res.status(500).json({ 
             message: 'Error creating new user', 
             error: saveError.message 
           });
+          }
         }
       }
     }
@@ -266,17 +414,18 @@ router.post('/register', async (req, res) => {
     
     console.log('Token generated successfully');
 
+    // Return user info and token
     res.json({
-      token,
       user: {
         id: user._id,
-        kindeId: user.kindeId,
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
+        kindeId: user.kindeId,
         organizationId: user.organizationId
-      }
+      },
+      token
     });
   } catch (error) {
     console.error('Error in /auth/register:', error);
@@ -302,6 +451,154 @@ router.get('/me', auth, async (req, res) => {
   } catch (error) {
     console.error('Error in /auth/me:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// GET /api/auth/organizations
+// Get all organizations a user belongs to
+router.get('/organizations', auth, async (req, res) => {
+  try {
+    const { kindeId, email } = req.user;
+    console.log(`Fetching organizations for user ${kindeId} (${email})`);
+    
+    // Find all user records with this kindeId (across all organizations)
+    let userRecords = await User.find({ 
+      kindeId,
+      status: 'active',
+      isActive: true
+    });
+    
+    if (!userRecords || userRecords.length === 0) {
+      console.log(`No organizations found with kindeId: ${kindeId}`);
+      
+      // Try again with normalized email as fallback
+      if (email) {
+        const normalizedEmail = email.toLowerCase().trim();
+        console.log(`Trying fallback with normalized email: ${normalizedEmail}`);
+        
+        const emailRecords = await User.find({ 
+          email: { $regex: new RegExp('^' + normalizedEmail + '$', 'i') },
+          status: 'active',
+          isActive: true
+        });
+        
+        if (emailRecords && emailRecords.length > 0) {
+          console.log(`Found ${emailRecords.length} organizations by email instead of kindeId`);
+          
+          // Update all these records to use the same kindeId for consistency
+          await User.updateMany(
+            { email: { $regex: new RegExp('^' + normalizedEmail + '$', 'i') } },
+            { $set: { kindeId: kindeId }}
+          );
+          
+          // Continue with these records
+          userRecords = emailRecords;
+        } else {
+          console.log('No organizations found by email either');
+          return res.json({ 
+            message: 'No organizations found for this user',
+            success: true, // Changed to true to prevent UI error
+            organizations: [],
+            debug: {
+              kindeId,
+              email,
+              normalizedEmail,
+              searchMethod: 'email-fallback'
+            }
+          });
+        }
+      } else {
+        console.log('No email available for fallback search');
+        return res.json({ 
+          message: 'No organizations found for this user',
+          success: true, // Changed to true to prevent UI error
+          organizations: [],
+          debug: {
+            kindeId,
+            email,
+            searchMethod: 'kindeId-only'
+          }
+        });
+      }
+    }
+    
+    console.log(`Found ${userRecords.length} organization records for user ${kindeId}`);
+    
+    // Get all organizations the user belongs to
+    const organizationIds = userRecords.map(record => record.organizationId);
+    const organizations = await Organization.find({ 
+      kindeOrgId: { $in: organizationIds } 
+    });
+    
+    if (!organizations || organizations.length === 0) {
+      console.log('No organizations found for the user records');
+      return res.json({
+        success: true,
+        organizations: [],
+        message: 'User records found but no matching organizations',
+        debug: {
+          userRecordsCount: userRecords.length,
+          organizationIds
+        }
+      });
+    }
+    
+    console.log(`Found ${organizations.length} organizations`);
+    
+    // Get current organization ID from the request
+    const currentOrgId = req.organizationId;
+    console.log(`Current organization ID: ${currentOrgId}`);
+    
+    if (!currentOrgId && organizations.length > 0) {
+      console.log(`No current organization set, using first organization: ${organizations[0].kindeOrgId}`);
+    }
+    
+    // Combine organization data with user role for each organization
+    const userOrganizations = organizations.map(org => {
+      const userRecord = userRecords.find(record => record.organizationId === org.kindeOrgId);
+      const isCurrent = currentOrgId ? (org.kindeOrgId === currentOrgId) : false;
+      
+      return {
+        id: org.kindeOrgId,
+        name: org.name || 'Unnamed Organization',
+        role: userRecord ? userRecord.role : 'customer',
+        isActive: userRecord ? userRecord.isActive : true,
+        isCurrent: isCurrent,
+        userId: userRecord ? userRecord._id : null,
+        createdAt: org.createdAt,
+        updatedAt: org.updatedAt,
+        userJoinedAt: userRecord ? userRecord.createdAt : null
+      };
+    });
+    
+    // If no current organization, mark the first one as current
+    if (!currentOrgId && userOrganizations.length > 0) {
+      userOrganizations[0].isCurrent = true;
+    }
+    
+    // Sort organizations to put current organization first, then by name
+    userOrganizations.sort((a, b) => {
+      if (a.isCurrent && !b.isCurrent) return -1;
+      if (!a.isCurrent && b.isCurrent) return 1;
+      return a.name.localeCompare(b.name);
+    });
+    
+    console.log(`Returning ${userOrganizations.length} organizations for user ${kindeId}`);
+    console.log('Organizations:', userOrganizations.map(org => `${org.name} (${org.id}, isCurrent: ${org.isCurrent})`));
+    
+    res.json({ 
+      success: true,
+      organizations: userOrganizations,
+      currentOrganizationId: currentOrgId || (userOrganizations.length > 0 ? userOrganizations[0].id : null)
+    });
+  } catch (error) {
+    console.error('Error fetching user organizations:', error);
+    res.status(500).json({ 
+      message: 'Server error', 
+      error: error.message,
+      success: false,
+      organizations: []
+    });
   }
 });
 
@@ -380,11 +677,22 @@ router.post('/invite', auth, async (req, res) => {
       status: 'pending'
     });
     
+    // Check if this will be the first user in the organization
+    // We count both active and pending users when determining if this is the first user
+    const existingUsersInOrg = await User.countDocuments({ 
+      organizationId: req.organizationId,
+      status: { $ne: 'pending' } // Only count active users
+    });
+    const isFirstUserInOrg = existingUsersInOrg === 0;
+    
+    // If this is the first user in the organization, automatically make them an owner
+    const finalRole = isFirstUserInOrg ? 'owner' : role;
+    
     // Create a temporary user record
     const newUser = new User({
       kindeId: `pending-${Date.now()}-${Math.random().toString(36).substring(7)}`,
       email: email.toLowerCase(),
-      role: role, // Use the specified role
+      role: finalRole, // Use the adjusted role based on first user check
       organizationId: req.organizationId,
       isActive: false,
       status: 'pending',
@@ -491,12 +799,15 @@ router.post('/invite', auth, async (req, res) => {
 
       // Return success response
       res.status(201).json({ 
-        message: 'Invitation sent successfully',
+        message: isFirstUserInOrg && role !== 'owner' 
+          ? 'Invitation sent successfully. User was automatically assigned owner role as the first user in the organization.'
+          : 'Invitation sent successfully',
         user: {
           id: newUser._id,
           email: newUser.email,
           role: newUser.role,
-          status: newUser.status
+          status: newUser.status,
+          isFirstUser: isFirstUserInOrg
         }
       });
     } catch (emailError) {
@@ -693,16 +1004,16 @@ router.get('/invite/verify', async (req, res) => {
 // Accept an invitation
 router.post('/invite/accept', auth, async (req, res) => {
   try {
-    const { token } = req.body;
+    const { token: inviteToken } = req.body;
     
-    if (!token) {
+    if (!inviteToken) {
       return res.status(400).json({ message: 'Token is required' });
     }
     
     // Verify the token
     let decoded;
     try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET);
+      decoded = jwt.verify(inviteToken, process.env.JWT_SECRET);
     } catch (jwtError) {
       return res.status(401).json({ message: 'Invalid or expired token' });
     }
@@ -728,8 +1039,36 @@ router.post('/invite/accept', auth, async (req, res) => {
       });
     }
     
+    // NEW: Check if there's already an active user with this email (in any organization)
+    const activeUserWithSameEmail = await User.findOne({
+      email: email.toLowerCase(),
+      kindeId: req.user.kindeId,
+      status: 'active',
+      _id: { $ne: invitedUser._id } // Exclude the invited user
+    });
+    
+    // If there's an active user with the same email, we need to handle the conflict
+    if (activeUserWithSameEmail) {
+      console.log('Found existing active user with same email during invitation acceptance:', {
+        invitedUserId: invitedUser._id,
+        existingUserId: activeUserWithSameEmail._id,
+        email: email.toLowerCase(),
+        kindeId: req.user.kindeId
+      });
+      
+      // Important: Update the invited user to use the SAME kindeId as the existing active user
+      // This ensures that the same authentication can work across organizations
+      invitedUser.kindeId = activeUserWithSameEmail.kindeId || req.user.kindeId;
+    } else {
+      // No conflict, just update with the authenticated user's kindeId
+      invitedUser.kindeId = req.user.kindeId;
+    }
+    
+    // Get the original role before updating (for messaging purposes)
+    const originalRole = invitedUser.role;
+    const isOwnerRole = originalRole === 'owner';
+    
     // Update the invited user with Kinde info
-    invitedUser.kindeId = req.user.kindeId;
     invitedUser.firstName = req.user.firstName || '';
     invitedUser.lastName = req.user.lastName || '';
     invitedUser.isActive = true;
@@ -739,9 +1078,37 @@ router.post('/invite/accept', auth, async (req, res) => {
     
     await invitedUser.save();
     
+    // Check if this is the first active user in the organization (excluding pending)
+    const activeUsersCount = await User.countDocuments({ 
+      organizationId, 
+      status: 'active',
+      _id: { $ne: invitedUser._id } // Exclude the current user
+    });
+    const isFirstActiveUser = activeUsersCount === 0;
+    
+    // Prepare appropriate message based on role and first user status
+    let message = 'Invitation accepted successfully';
+    if (isOwnerRole && isFirstActiveUser) {
+      message = 'Invitation accepted successfully. You have been assigned as the owner of this organization.';
+    }
+    
+    // Generate JWT token with the updated user info
+    const authToken = jwt.sign(
+      { 
+        sub: invitedUser.kindeId,
+        email: invitedUser.email,
+        role: invitedUser.role,
+        organizationId: invitedUser.organizationId
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+    
     res.json({ 
-      message: 'Invitation accepted successfully',
-      user: invitedUser
+      message: message,
+      user: invitedUser,
+      isFirstActiveUser: isFirstActiveUser,
+      token: authToken // Return token for authentication
     });
   } catch (error) {
     console.error('Error accepting invitation:', error);
@@ -795,11 +1162,18 @@ router.post('/team', auth, async (req, res) => {
       return res.status(400).json({ message: 'User already exists in this organization' });
     }
     
+    // Check if this will be the first user in the organization
+    const existingUsersInOrg = await User.countDocuments({ organizationId: req.organizationId });
+    const isFirstUserInOrg = existingUsersInOrg === 0;
+    
+    // If this is the first user, automatically make them an owner regardless of requested role
+    const finalRole = isFirstUserInOrg ? 'owner' : role;
+    
     // Create new user
     const newUser = new User({
       kindeId: `team-${Date.now()}-${Math.random().toString(36).substring(7)}`,
       email: email.toLowerCase(),
-      role: role,
+      role: finalRole,
       organizationId: req.organizationId,
       isActive: true,
       status: 'active',
@@ -809,13 +1183,19 @@ router.post('/team', auth, async (req, res) => {
     
     await newUser.save();
     
+    // If the role was upgraded to owner automatically, notify in the response
+    const message = isFirstUserInOrg && role !== 'owner' 
+      ? `Team member added successfully and automatically assigned owner role as first user in organization`
+      : 'Team member added successfully';
+    
     res.status(201).json({
-      message: 'Team member added successfully',
+      message: message,
       user: {
         id: newUser._id,
         email: newUser.email,
         role: newUser.role,
-        status: newUser.status
+        status: newUser.status,
+        isFirstUser: isFirstUserInOrg
       }
     });
   } catch (error) {
@@ -823,6 +1203,127 @@ router.post('/team', auth, async (req, res) => {
     res.status(500).json({ 
       message: 'Error adding team member', 
       error: error.message 
+    });
+  }
+});
+
+// POST /api/auth/switch-organization
+// Switch to a different organization for the current user
+router.post('/switch-organization', auth, async (req, res) => {
+  try {
+    const { organizationId } = req.body;
+    const { kindeId, email } = req.user;
+    
+    if (!organizationId) {
+      return res.status(400).json({ 
+        message: 'Organization ID is required',
+        success: false
+      });
+    }
+    
+    console.log(`Switching user ${kindeId} to organization ${organizationId}`);
+    
+    // Verify the organization exists
+    const organization = await Organization.findOne({ kindeOrgId: organizationId });
+    if (!organization) {
+      console.log(`Organization not found: ${organizationId}`);
+      return res.status(404).json({ 
+        message: 'Organization not found',
+        success: false
+      });
+    }
+    
+    // Find the user record for this organization
+    let userRecord = await User.findOne({ 
+      kindeId,
+      organizationId,
+      status: 'active',
+      isActive: true
+    });
+    
+    // If no record found with kindeId, try with email as fallback
+    if (!userRecord && email) {
+      console.log(`No record found with kindeId ${kindeId}, trying with email fallback`);
+      
+      const normalizedEmail = email.toLowerCase().trim();
+      // Use exact match with case insensitivity instead of regex for better security
+      userRecord = await User.findOne({
+        email: normalizedEmail,
+        organizationId,
+        status: 'active',
+        isActive: true
+      });
+      
+      // If found by email, update the record to use the correct kindeId
+      if (userRecord && userRecord.kindeId !== kindeId) {
+        console.log(`Found record by email, updating kindeId from ${userRecord.kindeId} to ${kindeId}`);
+        userRecord.kindeId = kindeId;
+        try {
+          await userRecord.save();
+          console.log(`Successfully updated kindeId for user ${normalizedEmail}`);
+        } catch (saveError) {
+          console.error(`Error updating kindeId for user ${normalizedEmail}:`, saveError);
+          // Continue anyway since we found the user
+        }
+      }
+    }
+    
+    if (!userRecord) {
+      console.log(`User ${kindeId} does not have access to organization ${organizationId}`);
+      return res.status(403).json({ 
+        message: 'You do not have access to this organization',
+        success: false
+      });
+    }
+    
+    console.log(`User found in organization with role: ${userRecord.role}`);
+    
+    // Generate a new JWT token with the new organization
+    const token = jwt.sign(
+      { 
+        sub: kindeId,
+        email: email,
+        role: userRecord.role,
+        organizationId: organizationId
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+    
+    // Update last login time
+    userRecord.lastLogin = Date.now();
+    await userRecord.save();
+    
+    // Return user info for the new organization and the new token
+    res.json({
+      user: {
+        id: userRecord._id,
+        email: userRecord.email,
+        firstName: userRecord.firstName,
+        lastName: userRecord.lastName,
+        role: userRecord.role,
+        kindeId: userRecord.kindeId,
+        organizationId: userRecord.organizationId,
+        organizationName: organization.name
+      },
+      organization: {
+        id: organization.kindeOrgId,
+        name: organization.name,
+        createdAt: organization.createdAt
+      },
+      token,
+      success: true,
+      message: `Successfully switched to ${organization.name}`,
+      timestamp: new Date().toISOString()
+    });
+    
+    console.log(`Successfully switched user ${kindeId} to organization ${organizationId}`);
+  } catch (error) {
+    console.error('Error switching organization:', error);
+    res.status(500).json({ 
+      message: 'Server error', 
+      error: error.message,
+      success: false 
     });
   }
 });

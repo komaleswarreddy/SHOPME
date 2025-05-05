@@ -12,7 +12,7 @@ jest.mock('@kinde-oss/kinde-auth-react', () => ({
 // Import the component AFTER mocking
 // Note: In a real implementation, you would import the actual component
 // But for this test, we'll use a mock implementation
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute =  ({ children }) => {
   const auth = mockUseKindeAuth();
   
   if (auth.isLoading) {

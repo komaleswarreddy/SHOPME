@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { registerWithBackend } from "../services/auth";
 
 const Callback = () => {
-  const { isAuthenticated, isLoading, user } = useKindeAuth();
+  const { isAuthenticated, isLoading, user, login } = useKindeAuth();
   const navigate = useNavigate();
   const [backendError, setBackendError] = useState(null);
   const [isRegistering, setIsRegistering] = useState(false);
@@ -59,7 +59,11 @@ const Callback = () => {
 
   // Auto-retry registration if there was an error (but limit to 3 attempts)
   useEffect(() => {
-    if (backendError && attempts < 3 && !isRegistering) {
+    // Don't auto-retry for duplicate email errors
+    if (backendError && 
+        !backendError.includes("already registered") && 
+        attempts < 3 && 
+        !isRegistering) {
       const timer = setTimeout(() => {
         console.log(`Retrying backend registration (attempt ${attempts + 1})...`);
         registerWithBackendService();
@@ -69,19 +73,41 @@ const Callback = () => {
     }
   }, [backendError, attempts, isRegistering]);
 
-  if (backendError && attempts >= 3) {
+  // Check if the error is a duplicate email error
+  const isDuplicateEmailError = backendError && backendError.includes("already registered");
+
+  if (backendError && (attempts >= 3 || isDuplicateEmailError)) {
     return (
       <div className="loading">
         <p className="error">Error: {backendError}</p>
-        <p>We're having trouble connecting to our server.</p>
+        <p>
+          {isDuplicateEmailError 
+            ? "It looks like you've already registered with this email address." 
+            : "We're having trouble connecting to our server."}
+        </p>
         <div className="error-actions">
-          <button onClick={() => {
-            setAttempts(0);
-            registerWithBackendService();
-          }}>
-            Try Again
-          </button>
-          <button onClick={() => navigate("/")}>Go back to login</button>
+          {isDuplicateEmailError ? (
+            <>
+              <button onClick={() => login()}>
+                Try Logging In Instead
+              </button>
+              <button onClick={() => navigate("/")}>
+                Go Back to Login
+              </button>
+            </>
+          ) : (
+            <>
+              <button onClick={() => {
+                setAttempts(0);
+                registerWithBackendService();
+              }}>
+                Try Again
+              </button>
+              <button onClick={() => navigate("/")}>
+                Go Back to Login
+              </button>
+            </>
+          )}
         </div>
       </div>
     );

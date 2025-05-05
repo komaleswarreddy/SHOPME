@@ -2,12 +2,22 @@ const request = require('supertest');
 const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const jwt = require('jsonwebtoken');
+const dotenv = require('dotenv');
+
+// Load test environment variables
+dotenv.config({ path: './backend/.env.test' });
 
 // Import your models
-const User = require('../../backend/models/User');
-const Product = require('../../backend/models/Product');
+// Update these imports if your actual model paths are different
+let User, Product;
+try {
+  User = require('../../backend/models/User');
+  Product = require('../../backend/models/Product');
+} catch (error) {
+  console.error('Error importing models:', error);
+}
 
-// Import Express app (assuming server.js exports the app)
+// Import Express app (assuming server.js exports the app without starting it)
 let app;
 try {
   app = require('../../backend/server');
@@ -31,9 +41,9 @@ const generateValidToken = (user) => {
       id: user._id.toString(),
       email: user.email,
       role: user.role,
-      organizationId: user.organization ? user.organization.toString() : null
+      organizationId: user.organizationId ? user.organizationId.toString() : null
     },
-    process.env.JWT_SECRET || 'b2boost-crm-secret-key',
+    process.env.JWT_SECRET || 'test-secret-key',
     { expiresIn: '1h' }
   );
 };

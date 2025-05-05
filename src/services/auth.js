@@ -79,20 +79,29 @@ export const registerWithBackend = async (kindeUser, retryCount = 0) => {
         email: kindeUser.email
       });
       
-      // If we've already retried multiple times, throw the error
+      // If we've already retried multiple times, throw a user-friendly error
       if (retryCount >= 2) {
-        throw new Error(errorData.message || 'Failed to register with backend after multiple attempts');
+        if (errorData.message && errorData.message.includes('duplicate email')) {
+          throw new Error('This email is already registered. Please try logging in instead or contact support if you cannot access your account.');
+        }
+        throw new Error(errorData.message || 'Failed to register with backend after multiple attempts. Please try again later.');
       }
       
       // Retry with a different org id in case of duplicate key error
-      if (errorData.error && errorData.error.includes('duplicate key error')) {
-        console.log('Retrying with different organization ID');
+      if (errorData.error && errorData.error.includes('duplicate key error') || 
+          (errorData.message && errorData.message.includes('duplicate'))) {
+        console.log('Detected duplicate key error, retrying with different organization ID');
         const newOrgId = `org-${kindeUser.id.substring(0, 8)}-${Date.now()}`;
         kindeUser.org_code = newOrgId;
         return registerWithBackend(kindeUser, retryCount + 1);
       }
       
-      throw new Error(errorData.message || 'Something went wrong during registration');
+      // Provide a more user-friendly error message
+      if (errorData.message && errorData.message.includes('duplicate email')) {
+        throw new Error('This email is already registered. Please try logging in instead or contact support if you cannot access your account.');
+      }
+      
+      throw new Error(errorData.message || 'Something went wrong during registration. Please try again later.');
     }
 
     const data = await response.json();

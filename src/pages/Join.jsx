@@ -52,15 +52,32 @@ const Join = () => {
       setLoading(true);
       
       // Accept the invitation
-      await authService.acceptInvitation(token);
+      const acceptResponse = await authService.acceptInvitation(token);
       
-      // Navigate to dashboard
+      // Store the token if provided by the backend
+      if (acceptResponse.token) {
+        console.log('Storing authentication token from invitation acceptance');
+        localStorage.setItem('b2boost_token', acceptResponse.token);
+      }
+      
+      // Navigate to dashboard with success message
       navigate('/dashboard', { 
-        state: { joinSuccess: true, organization: inviteData?.organization?.name } 
+        state: { 
+          joinSuccess: true, 
+          organization: inviteData?.organization?.name,
+          role: inviteData?.role 
+        } 
       });
     } catch (error) {
       console.error('Error accepting invitation:', error);
-      setError(error.message || 'Failed to accept invitation. Please try again.');
+      
+      // If the error is about already being registered, we'll give more specific guidance
+      if (error.message && error.message.includes('already registered')) {
+        setError('This account is already registered. If you have trouble accessing your account, please contact the organization administrator.');
+      } else {
+        setError(error.message || 'Failed to accept invitation. Please try again.');
+      }
+      
       setLoading(false);
     }
   };

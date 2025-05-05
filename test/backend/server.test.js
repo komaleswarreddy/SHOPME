@@ -1,10 +1,21 @@
 const request = require('supertest');
 const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
-const app = require('../../backend/server');
 const dotenv = require('dotenv');
 
-dotenv.config({ path: './backend/.env' });
+// Load test environment variables
+dotenv.config({ path: './backend/.env.test' });
+
+// Import app after environment variables are loaded
+// Assuming your server file exports the app without starting it
+// If not, you may need to modify your server.js to export the app
+let app;
+try {
+  app = require('../../backend/server');
+} catch (error) {
+  console.error('Could not import server app:', error);
+  process.exit(1);
+}
 
 let mongoServer;
 
